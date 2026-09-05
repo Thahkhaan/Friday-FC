@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friday FC v0.791.050926 — Football Field Payments</title>
+<style>
+:root{
+  --blue:#165DFF; --blue2:#0D47C9; --red:#E53935; --ink:#162033;
+  --muted:#6B7280; --bg:#F4F7FB; --card:#fff; --line:#E5EAF2;
+  --green:#15945B; --orange:#D97706; --shadow:0 10px 30px rgba(24,45,85,.08);
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select{font:inherit} button{cursor:pointer;border:0}
+.app{min-height:100vh}.topbar{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.nav{max-width:1080px;margin:auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px}.ball{width:36px;height:36px;border-radius:11px;background:var(--blue);display:grid;place-items:center;color:#fff}
+.brand small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.nav-actions{display:flex;gap:8px;align-items:center;}
+.btn{padding:10px 14px;border-radius:10px;font-weight:800;background:#EEF3FF;color:var(--blue)}.btn.primary{background:var(--blue);color:#fff}.btn.red{background:#FFF0F0;color:var(--red)}.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.main{max-width:1080px;margin:auto;padding:30px 20px 70px}.hero{display:grid;grid-template-columns:1.4fr .8fr;gap:22px;align-items:stretch}
+.hero-card{background:linear-gradient(135deg,#1557F0,#1A70FF);color:#fff;border-radius:24px;padding:30px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero-card:after{content:"⚽";position:absolute;font-size:130px;right:-10px;bottom:-35px;opacity:.11}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;opacity:.8}.hero h1{font-size:38px;line-height:1.05;margin:8px 0 12px;max-width:550px}.hero p{margin:0;max-width:560px;opacity:.9}
+.lookup-card,.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}
+.lookup-card h3{margin:0 0 6px}.lookup-card p{margin:0 0 16px;color:var(--muted);font-size:14px}
+.search{display:flex;gap:8px}.search input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;outline:none}.search input:focus{border-color:var(--blue)}
+.suggestions{margin-top:8px;display:flex;flex-direction:column;gap:5px}.suggestion{padding:10px 12px;border-radius:99px;background:#F7F9FD;text-align:left}.suggestion:hover{background:#EEF3FF;color:var(--blue)}
+.section{margin-top:24px}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.section-head h2{margin:0;font-size:22px}.muted{color:var(--muted)}
+.profile{display:none}.profile.active{display:block}.profile-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.name{font-size:28px;font-weight:900}.status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900}.paid{background:#EAF8F1;color:var(--green)}.due{background:#FFF1F0;color:var(--red)}.partial{background:#FFF7E8;color:var(--orange)}
+.balance{margin-top:18px;background:#F7F9FD;border-radius:16px;padding:18px;display:flex;justify-content:space-between;align-items:center}.balance strong{font-size:34px}.balance span{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}.stat{padding:15px;border:1px solid var(--line);border-radius:14px}.stat b{font-size:20px}.stat small{display:block;color:var(--muted);margin-bottom:4px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:600px}.table th,.table td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);font-size:14px}.table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.amount{font-weight:900}
+.admin{display:none}.admin.active{display:block}.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:15px}.tab{white-space:nowrap;padding:9px 13px;border-radius:10px;background:#fff;border:1px solid var(--line);font-weight:800}.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:900;margin-bottom:6px;color:var(--muted)}.field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.field-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.field-header label{margin-bottom:0}
+.player-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:300px;overflow-y:auto;padding:2px;}
+.player-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F8FAFD;border:1px solid var(--line);border-radius:12px;user-select:none;font-size:13px;transition:all 0.15s ease;}
+.player-row:hover{background:#EEF3FF;border-color:#C6D7FF;}
+.check{display:flex;align-items:center;gap:10px;font-weight:700;width:100%;overflow:hidden;}
+.check input[type="checkbox"]{width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--blue);flex-shrink:0;}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.kpi{padding:15px;border-radius:14px;background:#F7F9FD}.kpi small{display:block;color:var(--muted)}.kpi b{font-size:23px}
+.modal{position:fixed;inset:0;background:rgba(11,23,45,.45);display:none;place-items:center;padding:20px;z-index:30}.modal.active{display:grid}.modal-card{background:#fff;border-radius:20px;padding:24px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)}.modal-card h3{margin-top:0}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.toast{position:fixed;right:20px;bottom:20px;background:#162033;color:#fff;padding:12px 15px;border-radius:11px;display:none;z-index:50}.toast.show{display:block}
+.empty{padding:35px;text-align:center;color:var(--muted)}
+.action-cell{display:flex;gap:6px;align-items:center}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:35px}
+.danger-zone{margin-top:20px;padding:16px;background:#FFF5F5;border:1px solid #FFE0E0;border-radius:14px;display:flex;justify-content:space-between;align-items:center;}
+
+.feature-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin-top:24px}
+.score-board{background:linear-gradient(135deg,#1E293B,#0F172A);color:#fff;border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.score-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:10px}
+.score-header h3{margin:0;font-size:18px;color:#F8FAFC}
+.teams-wrapper{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;text-align:center}
+.team-box{padding:12px;border-radius:14px}
+.team-red{background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);color:#FF8A80}
+.team-blue{background:rgba(22,93,255,.15);border:1px solid rgba(22,93,255,.4);color:#82B1FF}
+.team-name{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.team-score{font-size:36px;font-weight:900;line-height:1;color:#fff}
+.vs-badge{font-weight:900;font-size:14px;color:#94A3B8;opacity:.7}
+
+.accolades-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.accolade-card{background:#F8FAFC;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.accolade-icon{font-size:22px;width:34px;height:34px;border-radius:8px;background:#fff;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.accolade-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.accolade-winner{font-weight:900;font-size:14px;color:var(--ink)}
+
+.qr-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;text-align:center;box-shadow:var(--shadow)}
+.qr-preview-box{width:100%;max-width:260px;height:260px;margin:12px auto;border:2px dashed var(--line);border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#FAFBFD;cursor:pointer;transition:transform 0.2s ease, border-color 0.2s ease;}
+.qr-preview-box:hover{border-color:var(--blue);transform:scale(1.02)}
+.qr-preview-box img{max-width:100%;max-height:100%;object-fit:contain;margin:auto;display:block;}
+
+.acc-details-box{margin-top:12px;padding:12px 14px;background:#F8FAFD;border:1px solid var(--line);border-radius:12px;text-align:left;font-size:13px;}
+.acc-details-header{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:6px;letter-spacing:0.04em;}
+.acc-num-clickable{color:var(--blue);font-weight:900;cursor:pointer;display:inline-block;transition:opacity 0.15s ease;}
+.acc-num-clickable:hover{opacity:0.8;text-decoration:underline;}
+
+@media(max-width:760px){.hero,.feature-grid{grid-template-columns:1fr}.hero h1{font-size:32px}.admin-grid{grid-template-columns:1fr}.stats,.kpis,.accolades-grid,.player-list{grid-template-columns:1fr}.nav{padding:12px 14px}.main{padding:20px 14px 50px}.profile-top{flex-direction:column}.balance{align-items:flex-start;flex-direction:column;gap:4px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar"><nav class="nav">
+  <div class="brand"><div class="ball">⚽</div><div>Friday FC<small>Field Payments</small></div></div>
+  <div class="nav-actions" id="navActions">
+    <button class="btn primary" onclick="openAdmin()" title="Manager Mode">Manager</button>
+  </div>
+</nav></header>
+
+<main class="main">
+<section id="home">
+  <div class="hero">
+    <div class="hero-card">
+      <div class="eyebrow">Weekly field payments</div>
+      <h1>Find your name. See your balance. Done.</h1>
+      <p>Simple payment tracking for your weekly football sessions. Pre-payments roll over automatically to future games.</p>
+    </div>
+    <div class="lookup-card">
+      <h3>Find your payment</h3><p>Search for your name to see what you owe or your credit balance.</p>
+      <div class="search"><input id="search" placeholder="Type your name…" oninput="searchPlayers()"><button class="btn primary" onclick="clearSearch()">Clear</button></div>
+      <div id="suggestions" class="suggestions"></div>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="score-board">
+      <div class="score-header">
+        <h3>Latest Match Results</h3>
+        <span id="latestMatchDate" class="muted" style="color:#94A3B8;font-size:12px;">No sessions played</span>
+      </div>
+      <div class="teams-wrapper">
+        <div class="team-box team-red">
+          <div class="team-name">Red Team</div>
+          <div id="redTeamScore" class="team-score">0</div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="team-box team-blue">
+          <div class="team-name">Blue Team</div>
+          <div id="blueTeamScore" class="team-score">0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px">
+        <div class="eyebrow" style="color:#94A3B8;margin-bottom:8px">Weekly Accolades</div>
+        <div class="accolades-grid">
+          <div class="accolade-card">
+            <div class="accolade-icon">🥇</div>
+            <div><div class="accolade-title">Top Scorer</div><div id="accTopScorer" class="accolade-winner">-</div></div>
+          </div>
+          <div class="accolade-card">
+            <div class="accolade-icon">⭐</div>
+            <div><div class="accolade-title">Superior Player</div><div id="accSuperior" class="accolade-winner">-</div></div>
+          </div>
+          <div class="accolade-card">
+            <div class="accolade-icon">🎯</div>
+            <div><div class="accolade-title">Best Playmaker</div><div id="accPlaymaker" class="accolade-winner">-</div></div>
+          </div>
+          <div class="accolade-card">
+            <div class="accolade-icon">🚀</div>
+            <div><div class="accolade-title">Puskas Award</div><div id="accPuskas" class="accolade-winner">-</div></div>
+          </div>
+          <div class="accolade-card">
+            <div class="accolade-icon">🎭</div>
+            <div><div class="accolade-title">Oscar Award</div><div id="accOscar" class="accolade-winner">-</div></div>
+          </div>
+          <div class="accolade-card">
+            <div class="accolade-icon">⏰</div>
+            <div><div class="accolade-title">Most Punctual</div><div id="accPunctual" class="accolade-winner">-</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="qr-card">
+      <h3 style="margin:0 0 4px">Payment QR Code</h3>
+      <p class="muted" style="font-size:13px;margin:0 0 10px">Scan QR code using your bank app to transfer funds. <b>Click to enlarge</b>.</p>
+      <div class="qr-preview-box" onclick="openQRModal()" title="Click to enlarge and view account details">
+        <img id="playerQRImg" src="" alt="Payment QR Code" style="display:none;">
+        <div id="qrPlaceholder" class="muted" style="font-size:12px;padding:10px;">No QR Code uploaded by manager.<br><span style="font-size:11px;color:var(--blue);text-decoration:underline;">Click for account details</span></div>
+      </div>
+      <div class="acc-details-box">
+        <div class="acc-details-header">Account Details (Click number to copy)</div>
+        <div style="margin-bottom:3px;"><b>Name:</b> <span id="displayAccName">Bathootha</span></div>
+        <div><b>Account No:</b> <span id="displayAccNumber" class="acc-num-clickable" onclick="copyAccNumber()" title="Click to copy account number">7730000000000</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="profile" class="profile section">
+    <div class="card">
+      <div class="profile-top">
+        <div><div class="muted">Payment status for</div><div id="profileName" class="name"></div></div>
+        <div id="profileStatus" class="status"></div>
+      </div>
+      <div class="balance"><span id="profileBalanceLabel">Current amount owed</span><strong id="profileBalance">MVR 0.00</strong></div>
+      <div class="stats">
+        <div class="stat"><small>This week share</small><b id="weekShare">MVR 0.00</b></div>
+        <div class="stat"><small>Total paid</small><b id="totalPaid">MVR 0.00</b></div>
+        <div class="stat"><small>Sessions joined</small><b id="sessionCount">0</b></div>
+      </div>
+    </div>
+    <div class="card section">
+      <div class="section-head"><h2>Payment history</h2><span class="muted">Your share of each field cost</span></div>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Week</th><th>Field cost</th><th>Players</th><th>Your share</th><th>Allocated</th><th>Status</th></tr></thead><tbody id="history"></tbody></table></div>
+    </div>
+  </section>
+</section>
+
+<section id="admin" class="admin section">
+  <div class="section-head">
+    <div><div class="eyebrow" style="color:var(--blue)">Manager mode</div><h2>Weekly payment tracker</h2></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="adminTab('current',this)">Active session</button>
+    <button class="tab" onclick="adminTab('all-pending',this)">All-time Balances</button>
+    <button class="tab" onclick="adminTab('sessions-log',this)">Sessions Log</button>
+    <button class="tab" onclick="adminTab('accolades-log',this)">Accolades Log</button>
+    <button class="tab" onclick="adminTab('create',this)">Create new session</button>
+    <button class="tab" onclick="adminTab('players',this)" oncontextmenu="handlePlayersTabContextMenu(event)">Players & Settings</button>
+  </div>
+
+  <div id="tab-current">
+    <div class="kpis"><div class="kpi"><small>Field cost</small><b id="kpiCost">MVR 0.00</b></div><div class="kpi"><small>Total collected</small><b id="kpiCollected">MVR 0.00</b></div><div class="kpi"><small>Total outstanding</small><b id="kpiOutstanding">MVR 0.00</b></div></div>
+    <div class="card">
+      <div class="section-head">
+        <div><h2 id="currentTitle">Active session</h2><span class="muted" id="currentMeta"></span></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn primary" onclick="openPaymentModal()">Record payment</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Share</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="tab-all-pending" style="display:none">
+    <div class="kpis">
+      <div class="kpi"><small>All Sessions Cost</small><b id="kpiAllCost">MVR 0.00</b></div>
+      <div class="kpi"><small>Total Collected (All-Time)</small><b id="kpiAllCollected">MVR 0.00</b></div>
+      <div class="kpi"><small>Total Pending (All-Time)</small><b id="kpiAllPending" style="color:var(--red)">MVR 0.00</b></div>
+    </div>
+    <div class="card">
+      <div class="section-head">
+        <div><h2>Player Cumulative Balances</h2><span class="muted">Outstanding due or credit balances across all sessions</span></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+          <button class="btn primary" onclick="openPaymentModal()">Record payment</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead id="allPendingHeader">
+            <tr>
+              <th onclick="sortAllPending('name')" style="cursor:pointer;user-select:none;">Player</th>
+              <th onclick="sortAllPending('sessions')" style="cursor:pointer;user-select:none;">Sessions Joined</th>
+              <th onclick="sortAllPending('cost')" style="cursor:pointer;user-select:none;">Total Cost Share</th>
+              <th onclick="sortAllPending('paid')" style="cursor:pointer;user-select:none;">Total Paid</th>
+              <th onclick="sortAllPending('balance')" style="cursor:pointer;user-select:none;">Balance / Credit</th>
+              <th onclick="sortAllPending('status')" style="cursor:pointer;user-select:none;">Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="allPendingRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-sessions-log" style="display:none">
+    <div class="card">
+      <div class="section-head">
+        <div><h2>Sessions Log</h2><span class="muted">Full list of created sessions, venue info, booking payments, and participants</span></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn ghost" onclick="exportSessionsCSV()">Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Venue</th>
+              <th>Total Cost</th>
+              <th>Booking Paid By</th>
+              <th>Players Attending</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sessionsLogRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-accolades-log" style="display:none">
+    <div class="card">
+      <div class="section-head">
+        <div><h2>Session Accolades & Scores Log</h2><span class="muted">History of past match scores and weekly award recipients</span></div>
+        <button class="btn ghost" onclick="exportAccoladesCSV()">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Session Date</th>
+              <th>Match Score</th>
+              <th>Top Scorer</th>
+              <th>Superior Player</th>
+              <th>Playmaker</th>
+              <th>Puskas</th>
+              <th>Oscar</th>
+              <th>Punctual</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="accoladesLogRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-create" style="display:none">
+    <div class="card">
+      <h2 style="margin-top:0">Create a weekly session</h2>
+      <p class="muted">Enter field details, match scores, award winners, and participants.</p>
+      
+      <div class="form-row"><div class="field"><label>Date *</label><input type="date" id="sessionDate" required></div><div class="field"><label>Field / location</label><input id="sessionLocation" placeholder="e.g. Henveiru football ground"></div></div>
+      <div class="form-row">
+        <div class="field"><label>Field booking cost (MVR) *</label><input type="number" step="0.01" id="sessionCost" placeholder="0.00" min="0" required></div>
+        <div class="field"><label>Person making payment for field booking</label><input type="text" id="sessionBookingPaidBy" placeholder="e.g. Ahmed"></div>
+      </div>
+
+      <div style="background:#F8FAFD;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid var(--line);">
+        <label style="font-size:12px;font-weight:900;color:var(--muted);display:block;margin-bottom:8px">Match Scores</label>
+        <div class="form-row">
+          <div class="field" style="margin:0"><label style="color:var(--red)">Red Team Score</label><input type="number" id="scoreRed" value="0" min="0"></div>
+          <div class="field" style="margin:0"><label style="color:var(--blue)">Blue Team Score</label><input type="number" id="scoreBlue" value="0" min="0"></div>
+        </div>
+      </div>
+
+      <div style="background:#F8FAFD;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid var(--line);">
+        <label style="font-size:12px;font-weight:900;color:var(--muted);display:block;margin-bottom:8px">Session Accolades</label>
+        <div class="form-row">
+          <div class="field"><label>🥇 Top Scorer</label><select id="accSelectTopScorer"></select></div>
+          <div class="field"><label>⭐ Superior Player</label><select id="accSelectSuperior"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>🎯 Best Playmaker</label><select id="accSelectPlaymaker"></select></div>
+          <div class="field"><label>🚀 FridayFC Puskas Award</label><select id="accSelectPuskas"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>🎭 Oscar Award</label><select id="accSelectOscar"></select></div>
+          <div class="field"><label>⏰ Most Punctual Player</label><select id="accSelectPunctual"></select></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <label>Players joining this week</label>
+          <div style="display:flex;gap:6px;">
+            <button class="btn ghost sm" type="button" onclick="selectAllPlayers(true)">Select All</button>
+            <button class="btn ghost sm" type="button" onclick="selectAllPlayers(false)">Deselect All</button>
+          </div>
+        </div>
+        <div id="createPlayers" class="player-list"></div>
+      </div>
+      <button class="btn primary" onclick="createSession()">Create session</button>
+    </div>
+  </div>
+
+  <div id="tab-players" style="display:none">
+    <div class="admin-grid">
+      <div class="card">
+        <h2 style="margin-top:0">Add player</h2>
+        <div class="field"><label>Player name</label><input id="newPlayer" placeholder="Full name"></div>
+        <button class="btn primary" onclick="addPlayer()">Add player</button>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">Payment QR & Account Settings</h2>
+        <p class="muted" style="font-size:13px;">Upload payment QR image and set bank account details displayed to players.</p>
+        <div class="form-row">
+          <div class="field">
+            <label>Account Name</label>
+            <input id="accNameInput" placeholder="e.g. Bathootha" onchange="saveAccountDetails()">
+          </div>
+          <div class="field">
+            <label>Account Number</label>
+            <input id="accNumInput" placeholder="e.g. 7730000000000" onchange="saveAccountDetails()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Upload QR Image (PNG/JPG)</label>
+          <input type="file" id="qrFileInput" accept="image/*" onchange="handleQRUpload(event)">
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+          <button class="btn primary sm" onclick="saveAccountDetails()">Save Account Info</button>
+          <button class="btn red sm" onclick="removeQR()">Remove QR Code</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section">
+      <h2 style="margin-top:0">Player list</h2>
+      <div id="allPlayers" class="player-list"></div>
+    </div>
+
+    <div class="danger-zone">
+      <div>
+        <strong style="color:var(--red);display:block;">Delete All Sessions & Transactions</strong>
+        <span class="muted" style="font-size:13px;">Permanently clear all sessions, payment entries, and logs across all players.</span>
+      </div>
+      <button class="btn red" onclick="openDeleteAllModal()">Clear All Data</button>
+    </div>
+  </div>
+</section>
+
+<footer>Friday FC v0.791.050926</footer>
+</main>
+</div>
+
+<!-- MODALS -->
+<div id="pinModal" class="modal">
+  <div class="modal-card">
+    <h3>Manager access</h3>
+    <div class="field">
+      <label>Username</label>
+      <input id="managerUsername" type="text" placeholder="FCManager">
+    </div>
+    <div class="field">
+      <label>PIN / Password</label>
+      <input id="pin" type="password" placeholder="Enter PIN / Password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('pinModal')">Cancel</button>
+      <button class="btn primary" onclick="checkPin()">Enter manager mode</button>
+    </div>
+  </div>
+</div>
+
+<div id="changePasswordModal" class="modal">
+  <div class="modal-card">
+    <h3>Change Manager Password</h3>
+    <p class="muted" style="font-size:13px;">Update manager access password/PIN.</p>
+    <div class="field">
+      <label>Current Password *</label>
+      <input type="password" id="currentManagerPin" placeholder="Enter current password">
+    </div>
+    <div class="field">
+      <label>New Password *</label>
+      <input type="password" id="newManagerPin" placeholder="Enter new password">
+    </div>
+    <div class="field">
+      <label>Confirm New Password *</label>
+      <input type="password" id="confirmManagerPin" placeholder="Confirm new password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('changePasswordModal')">Cancel</button>
+      <button class="btn primary" onclick="changeManagerPin()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<div id="paymentModal" class="modal"><div class="modal-card"><h3>Record / Pre-pay Payment</h3><div class="field"><label>Payer Account</label><select id="paymentPlayer"></select></div><div class="field"><label>Amount paid (MVR)</label><input id="paymentAmount" type="number" step="0.01" min="0.01" placeholder="0.00"></div><p class="muted" style="font-size:12px;">* Amounts exceeding total dues will sit in credit balance for future sessions.</p><div class="modal-actions"><button class="btn ghost" onclick="closeModal('paymentModal')">Cancel</button><button class="btn primary" onclick="recordPayment()">Save payment</button></div></div></div>
+
+<div id="qrEnlargeModal" class="modal">
+  <div class="modal-card" style="text-align: center; max-width: 400px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <h3 style="margin: 0; font-size: 20px;">Scan to Pay</h3>
+      <button class="btn ghost sm" onclick="closeModal('qrEnlargeModal')" style="font-size: 18px; padding: 2px 8px; line-height: 1;">×</button>
+    </div>
+    <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0; margin-bottom: 12px;">Scan the QR code or use account details.</p>
+    <div style="margin: 10px 0;">
+      <img id="enlargedQRImg" src="" alt="QR Code" style="width: 100%; max-width: 250px; border-radius: 12px; border: 1px solid var(--line); display: none; margin: 0 auto;">
+      <div id="enlargedQRPlaceholder" class="muted" style="padding: 24px; border: 2px dashed var(--line); border-radius: 12px; font-size: 13px;">No QR image uploaded by manager.</div>
+    </div>
+    <div style="background: #f8f9fa; padding: 14px 16px; border-radius: 12px; margin-top: 14px; text-align: left; border: 1px solid var(--line);">
+      <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; font-weight: 700;">Account Number (Click to Copy)</div>
+      <div id="modalAccNumber" class="acc-num-clickable" onclick="copyModalAccNumber()" style="font-size: 1.25rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.02em;">7730000000000</div>
+      <div style="font-size: 0.75rem; color: #888; text-transform: uppercase; font-weight: 700;">Account Name</div>
+      <div id="modalAccName" style="font-size: 0.95rem; font-weight: 800; color: var(--ink);">Bathootha</div>
+    </div>
+    <div class="modal-actions" style="justify-content: center; margin-top: 16px;">
+      <button class="btn ghost" onclick="closeModal('qrEnlargeModal')" style="width: 100%;">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="txLogsModal" class="modal"><div class="modal-card"><h3 id="txLogsTitle">Individual Payment Logs</h3><div class="table-wrap" style="max-height: 250px;"><table class="table"><thead><tr><th>Date / Time</th><th>Amount</th><th>Actions</th></tr></thead><tbody id="txLogsRows"></tbody></table></div><div class="modal-actions"><button class="btn ghost" onclick="closeModal('txLogsModal')">Close</button></div></div></div>
+
+<div id="editSessionModal" class="modal">
+  <div class="modal-card" style="max-height: 90vh; overflow-y: auto;">
+    <h3>Edit Session Information</h3>
+    <input type="hidden" id="editSessionId">
+    <div class="form-row">
+      <div class="field"><label>Date</label><input type="date" id="editSessionDate"></div>
+      <div class="field"><label>Location / Venue</label><input id="editSessionLocation"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Cost (MVR) *</label><input type="number" step="0.01" id="editSessionCost" min="0" required></div>
+      <div class="field"><label>Booking Paid By</label><input id="editSessionBookingPaidBy" placeholder="Person who paid"></div>
+    </div>
+    <div class="field">
+      <div class="field-header">
+        <label>Players Attending</label>
+        <div style="display:flex;gap:6px;">
+          <button class="btn ghost sm" type="button" onclick="selectAllEditPlayers(true)">Select All</button>
+          <button class="btn ghost sm" type="button" onclick="selectAllEditPlayers(false)">Deselect All</button>
+        </div>
+      </div>
+      <div id="editPlayersList" class="player-list"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('editSessionModal')">Cancel</button>
+      <button class="btn primary" onclick="saveEditedSession()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="editAccoladesModal" class="modal">
+  <div class="modal-card" style="max-height: 90vh; overflow-y: auto;">
+    <h3>Edit Session Accolades & Scores</h3>
+    <input type="hidden" id="editAccoladesSessionId">
+    <div style="background:#F8FAFD;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid var(--line);">
+      <label style="font-size:12px;font-weight:900;color:var(--muted);display:block;margin-bottom:8px">Match Scores</label>
+      <div class="form-row">
+        <div class="field" style="margin:0"><label style="color:var(--red)">Red Team Score</label><input type="number" id="editScoreRed" value="0" min="0"></div>
+        <div class="field" style="margin:0"><label style="color:var(--blue)">Blue Team Score</label><input type="number" id="editScoreBlue" value="0" min="0"></div>
+      </div>
+    </div>
+    <div style="background:#F8FAFD;padding:14px;border-radius:12px;margin-bottom:14px;border:1px solid var(--line);">
+      <label style="font-size:12px;font-weight:900;color:var(--muted);display:block;margin-bottom:8px">Session Accolades</label>
+      <div class="form-row">
+        <div class="field"><label>🥇 Top Scorer</label><select id="editAccTopScorer"></select></div>
+        <div class="field"><label>⭐ Superior Player</label><select id="editAccSuperior"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>🎯 Best Playmaker</label><select id="editAccPlaymaker"></select></div>
+        <div class="field"><label>🚀 FridayFC Puskas Award</label><select id="editAccPuskas"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>🎭 Oscar Award</label><select id="editAccOscar"></select></div>
+        <div class="field"><label>⏰ Most Punctual Player</label><select id="editAccPunctual"></select></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('editAccoladesModal')">Cancel</button>
+      <button class="btn primary" onclick="saveSessionAccolades()">Save Accolades</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteSessionModal" class="modal">
+  <div class="modal-card">
+    <h3 style="color:var(--red);margin-top:0;">Delete Session Confirmation</h3>
+    <p id="deleteSessionMsg" class="muted" style="font-size:14px;margin-bottom:20px;">Are you sure you want to delete this session? All related accolades and transactions for this session will also be permanently deleted.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('deleteSessionModal')">Cancel</button>
+      <button class="btn red" onclick="confirmDeleteSession()">Delete Session</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteAllModal" class="modal">
+  <div class="modal-card">
+    <h3 style="color:var(--red)">⚠️ Warning: Delete All Sessions & Transactions</h3>
+    <p class="muted">This action will permanently delete all created sessions, payment records, and logs for every player. This cannot be undone.</p>
+    <div class="field"><label>Manager Password required</label><input id="deleteAllPin" type="password" placeholder="Enter Manager Password"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('deleteAllModal')">Cancel</button>
+      <button class="btn red" onclick="confirmDeleteAllTransactions()">Delete Everything</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
